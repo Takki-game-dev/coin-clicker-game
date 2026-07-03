@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ザクザクコインクリッカー</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        .score-container {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e67e22;
+            margin: 20px 0;
+        }
+        /* クリックするボタン（コイン）の見た目 */
+        #click-btn {
+            width: 150px;
+            height: 150px;
+            font-size: 5rem;
+            color: #a84300;
+            background-color: #f1c40f;
+            border: 8px solid #f39c12;
+            cursor: pointer;
+            box-shadow: 0 8px #d35400;
+            transition: transform 0.05s;
+            outline: none;
+            user-select: none;
+        }
+        /* クリックした瞬間に少し沈むアニメーション */
+        #click-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px #d35400;
+        }
+        .shop {
+            margin: 30px auto;
+            max-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .shop-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .shop-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>💎 コインクリッカー 💎</h1>
+
+    <div class="score-container">
+        コイン: <span id="score">0</span>
+    </div>
+
+    <!-- メインのクリックボタン -->
+    <button id="click-btn">$</button>
+
+    <!-- ショップ -->
+    <div class="shop">
+        <h1>ショップ</h1>
+        <p>1秒ごとに自動で1コインゲット</p>
+        <button id="buy-auto-btn" class="shop-btn">自動連打機を購入（コスト:50）</button>
+        <p style="font-size: 1.5rem; color: #666;">保有数:<span id="auto-count">0</span></p>
+
+        <p>クリックで手に入るコインを1上げる</p>
+        <button id="buy-click-power-btn" class="shop-btn">クリックパワーを購入（コスト:50）</button>
+        <p style="font-size: 1.5rem; color: #666;">クリックパワー:<span id="click-power-count">1</span></p>
+    </div>
+
+    <script>
+        // --- データの管理 ---
+        let score = 0;
+        let autoClickers = 0;
+        let autoCost = 50;
+        let clickPower = 1;
+        let clickPowerCost = 50;
+
+        // --- 画面上の要素を取得 ---
+        const scoreDisplay = document.getElementById('score');
+        const clickBtn = document.getElementById('click-btn');
+        const buyAutoBtn = document.getElementById('buy-auto-btn');
+        const autoCountDisplay = document.getElementById('auto-count');
+        const buyClickPowerBtn = document.getElementById('buy-click-power-btn');
+        const clickPowerCountDisplay = document.getElementById('click-power-count');
+
+        // --- 画面表示を更新する関数 ---
+        function updateDisplay() {
+            scoreDisplay.textContent = score;
+            autoCountDisplay.textContent = autoClickers;
+            clickPowerCountDisplay.textContent = clickPower;
+            buyAutoBtn.textContent = `自動連打機を購入（コスト:${autoCost}）`;
+            buyClickPowerBtn.textContent = `クリックパワーを購入（コスト:${clickPowerCost}）`;
+
+            // コストが足りない時はボタンを押せなくする
+            // 自動
+            if (score >= autoCost) {
+                buyAutoBtn.disabled = false;
+            } else {
+                buyAutoBtn.disabled = true;
+            }
+
+            // 手動
+            if (score >= clickPowerCost) {
+                buyClickPowerBtn.disabled = false;
+            } else {
+                buyClickPowerBtn.disabled = true;
+            }
+        }
+
+        // --- 1. コインをクリックしたときの処理 ---
+        clickBtn.addEventListener('click', () => {
+            score += clickPower;
+            updateDisplay();
+        });
+
+        // --- 2. 自動化アイテムを購入した時の処理 ---
+        buyAutoBtn.addEventListener('click', () => {
+            if (score >= autoCost) {
+                score -= autoCost;  // コインを消費
+                autoClickers += 1;  // アイテムを増やす
+                autoCost = Math.floor(autoCost * 1.5);  // 次のコストを1.5倍に
+                updateDisplay();
+            }
+        });
+
+        // --- 3. 手動アイテムを購入した時の処理 ---
+        buyClickPowerBtn.addEventListener('click', () => {
+            if (score >= clickPowerCost) {
+                score -= clickPowerCost;  // コインを消費
+                clickPower += 1;  // アイテムを増やす
+                clickPowerCost = Math.floor(clickPowerCost * 1.5);  // 次のコストを1.5倍に
+                updateDisplay();
+            }
+        });
+
+        // --- 3. 1秒ごとに自動で実行される処理 ---
+        setInterval(() => {
+            if (autoClickers > 0) {
+                score += autoClickers;  // アイテムの数だけコインが増える
+                updateDisplay();
+            }
+        }, 1000);
+
+        // 最初の一回、画面を更新
+        updateDisplay();
+    </script>
+</body>
+</html>
