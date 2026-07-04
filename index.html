@@ -87,11 +87,11 @@
 
     <script>
         // --- データの管理 ---
-        let score = 0;
-        let autoClickers = 0;
-        let autoCost = 50;
-        let clickPower = 1;
-        let clickPowerCost = 50;
+        let score = parseInt(localStorage.getItem('save_score')) || 0;
+        let autoClickers = parseInt(localStorage.getItem('save_autos')) || 0;
+        let autoCost = parseInt(localStorage.getItem('save_cost')) || 50;
+        let clickPower = parseInt(localStorage.getItem('save_click_power')) || 1;
+        let clickPowerCost = parseInt(localStorage.getItem('save_click_power_cost')) || 50;
 
         // --- 画面上の要素を取得 ---
         const scoreDisplay = document.getElementById('score');
@@ -125,10 +125,20 @@
             }
         }
 
+        // --- セーブをする関数 ---
+        function saveGame() {
+            localStorage.setItem('save_score',score);
+            localStorage.setItem('save_autos',autoClickers);
+            localStorage.setItem('save_cost',autoCost);
+            localStorage.setItem('save_click_power',clickPower);
+            localStorage.setItem('save_click_power_cost',clickPowerCost);
+        }
+
         // --- 1. コインをクリックしたときの処理 ---
         clickBtn.addEventListener('click', () => {
             score += clickPower;
             updateDisplay();
+            saveGame(); // ★ここで自動セーブ！
         });
 
         // --- 2. 自動化アイテムを購入した時の処理 ---
@@ -138,6 +148,7 @@
                 autoClickers += 1;  // アイテムを増やす
                 autoCost = Math.floor(autoCost * 1.5);  // 次のコストを1.5倍に
                 updateDisplay();
+                saveGame(); // ★ここで自動セーブ！
             }
         });
 
@@ -148,6 +159,7 @@
                 clickPower += 1;  // アイテムを増やす
                 clickPowerCost = Math.floor(clickPowerCost * 1.5);  // 次のコストを1.5倍に
                 updateDisplay();
+                saveGame(); // ★ここで自動セーブ！
             }
         });
 
@@ -156,6 +168,7 @@
             if (autoClickers > 0) {
                 score += autoClickers;  // アイテムの数だけコインが増える
                 updateDisplay();
+                saveGame();
             }
         }, 1000);
 
