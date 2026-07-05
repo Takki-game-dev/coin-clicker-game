@@ -64,6 +64,9 @@
     </style>
 </head>
 <body>
+    <audio id="bgm-sound" src="bgm.mp3" loop></audio>
+    <audio id="click-sound" src="click.mp3"></audio>
+
     <h1>💎 コインクリッカー 💎</h1>
 
     <div class="score-container">
@@ -94,6 +97,8 @@
         let clickPowerCost = parseInt(localStorage.getItem('save_click_power_cost')) || 50;
 
         // --- 画面上の要素を取得 ---
+        const bgmSound = document.getElementById('bgm-sound');
+        const clickSound = document.getElementById('click-sound');
         const scoreDisplay = document.getElementById('score');
         const clickBtn = document.getElementById('click-btn');
         const buyAutoBtn = document.getElementById('buy-auto-btn');
@@ -136,6 +141,10 @@
 
         // --- 1. コインをクリックしたときの処理 ---
         clickBtn.addEventListener('click', () => {
+            // クリックされた瞬間に効果音を最初から再生する
+            clickSound.currentTime = 0;
+            clickSound.play();
+
             score += clickPower;
             updateDisplay();
             saveGame(); // ★ここで自動セーブ！
@@ -174,6 +183,13 @@
 
         // 最初の一回、画面を更新
         updateDisplay();
+
+        // 画面のどこかがクリックされたら、自動でＢＧＭを再生する仕組み
+        document.addEventListener('click', () => {
+            bgmSound.play().catch(error => {
+                // 最初のエラーを無視するための安全なおまじない
+            });
+        },{ once: true }); // once: true をつけると、最初の一回だけ実行される
     </script>
 </body>
 </html>
