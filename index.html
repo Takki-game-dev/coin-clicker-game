@@ -79,13 +79,17 @@
     <!-- ショップ -->
     <div class="shop">
         <h1>ショップ</h1>
-        <p>1秒ごとに自動で1コインゲット</p>
+        <p>1秒ごとに自動で<span id="auto-p">1</span>コインゲット</p>
         <button id="buy-auto-btn" class="shop-btn">自動連打機を購入（コスト:50）</button>
-        <p style="font-size: 1.5rem; color: #666;">保有数:<span id="auto-count">0</span></p>
+        <p style="font-size: 1.5rem; color: #666;">オートパワー:<span id="auto-count">0</span></p>
 
-        <p>クリックで手に入るコインを1上げる</p>
+        <p>クリックで手に入るコインを<span id="click-power-p">1</span>上げる</p>
         <button id="buy-click-power-btn" class="shop-btn">クリックパワーを購入（コスト:50）</button>
         <p style="font-size: 1.5rem; color: #666;">クリックパワー:<span id="click-power-count">1</span></p>
+
+        <p>リバースでコインや強化が一番最初に戻る代わりに倍率が上がる</p>
+        <button id="buy-reverse-btn" class="shop-btn">★リバース★（コスト:1000）</button>
+        <p style="font-size: 1.5rem; color: #666;">リバース回数:<span id="reverse-count">0</span></p>
     </div>
 
     <script>
@@ -95,6 +99,8 @@
         let autoCost = parseInt(localStorage.getItem('save_cost')) || 50;
         let clickPower = parseInt(localStorage.getItem('save_click_power')) || 1;
         let clickPowerCost = parseInt(localStorage.getItem('save_click_power_cost')) || 50;
+        let reverse = parseInt(localStorage.getItem('save_reverse')) || 0;
+        let reverseCost = parseInt(localStorage.getItem('save_reverse_cost')) || 1000; 
 
         // --- 画面上の要素を取得 ---
         const bgmSound = document.getElementById('bgm-sound');
@@ -105,14 +111,22 @@
         const autoCountDisplay = document.getElementById('auto-count');
         const buyClickPowerBtn = document.getElementById('buy-click-power-btn');
         const clickPowerCountDisplay = document.getElementById('click-power-count');
+        const buyReverseBtn = document.getElementById('buy-reverse-btn');
+        const reverseCountDisplay = document.getElementById('reverse-count');
+        const autoPDisplay = document.getElementById('auto-p')
+        const clickPowerPDisplay = document.getElementById('click-power-p')
 
         // --- 画面表示を更新する関数 ---
         function updateDisplay() {
             scoreDisplay.textContent = score;
-            autoCountDisplay.textContent = autoClickers;
-            clickPowerCountDisplay.textContent = clickPower;
+            autoCountDisplay.textContent = autoClickers * (reverse + 1);
+            clickPowerCountDisplay.textContent = clickPower * (reverse + 1);
+            reverseCountDisplay.textContent = reverse;
+            autoPDisplay.textContent = reverse + 1;
+            clickPowerPDisplay.textContent = reverse + 1;
             buyAutoBtn.textContent = `自動連打機を購入（コスト:${autoCost}）`;
             buyClickPowerBtn.textContent = `クリックパワーを購入（コスト:${clickPowerCost}）`;
+            buyReverseBtn.textContent = `★リバース★（コスト:${reverseCost}）`;
 
             // コストが足りない時はボタンを押せなくする
             // 自動
@@ -128,6 +142,13 @@
             } else {
                 buyClickPowerBtn.disabled = true;
             }
+
+            // リバース
+            if (score >= reverseCost) {
+                buyReverseBtn.disabled = false;
+            } else {
+                buyReverseBtn.disabled = true;
+            }
         }
 
         // --- セーブをする関数 ---
@@ -137,6 +158,8 @@
             localStorage.setItem('save_cost',autoCost);
             localStorage.setItem('save_click_power',clickPower);
             localStorage.setItem('save_click_power_cost',clickPowerCost);
+            localStorage.setItem('save_reverse',reverse);
+            localStorage.setItem('save_reverse_cost',reverseCost);
         }
 
         // --- 1. コインをクリックしたときの処理 ---
@@ -145,7 +168,7 @@
             clickSound.currentTime = 0;
             clickSound.play();
 
-            score += clickPower;
+            score += clickPower * (reverse + 1);
             updateDisplay();
             saveGame(); // ★ここで自動セーブ！
         });
@@ -172,10 +195,26 @@
             }
         });
 
-        // --- 3. 1秒ごとに自動で実行される処理 ---
+        // --- 4. リバースした時の処理 ---
+        buyReverseBtn.addEventListener('click', () => {
+            if (score >= reverseCost) {
+                score -= reverseCost; // コインを消費
+                reverse += 1; // アイテムを増やす
+                reverseCost = Math.floor(reverseCost * 1.5); // 次のコストを1.5倍に
+                clickPower = 1;
+                clickPowerCost = 50;
+                autoClickers = 0;
+                autoCost = 50;
+                score = 0;
+                updateDisplay();
+                saveGame(); // ★ここで自動セーブ！
+            }
+        })
+
+        // --- 5. 1秒ごとに自動で実行される処理 ---
         setInterval(() => {
             if (autoClickers > 0) {
-                score += autoClickers;  // アイテムの数だけコインが増える
+                score += autoClickers * (reverse + 1);  // アイテムの数だけコインが増える
                 updateDisplay();
                 saveGame();
             }
