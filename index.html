@@ -80,7 +80,7 @@
     <div class="shop">
         <h1>ショップ</h1>
         <p>1秒ごとに自動で<span id="auto-p">1</span>コインゲット</p>
-        <button id="buy-auto-btn" class="shop-btn">自動連打機を購入（コスト:50）</button>
+        <button id="buy-auto-btn" class="shop-btn">自動連打機を購入（コスト:100）</button>
         <p style="font-size: 1.5rem; color: #666;">オートパワー:<span id="auto-count">0</span></p>
 
         <p>クリックで手に入るコインを<span id="click-power-p">1</span>上げる</p>
@@ -92,15 +92,26 @@
         <p style="font-size: 1.5rem; color: #666;">リバース回数:<span id="reverse-count">0</span></p>
     </div>
 
+    <div class="shop" id="gacha-shop" style="background: #e8f8f5; border: 2px solid #a3e4d7; display: none;">
+        <h1>仲間ガチャ</h1>
+        <p>1000コインで仲間をゲット!（自動連打が全体パワーアップ）</p>
+        <button id="gacha-btn" class="shop-btn">ガチャを引く（コスト:1000）</button>
+        <p style="font-size: 1.5rem; color: #666;">最新の仲間:<span id="gacha-result">まだ誰もいません</span></p>
+        <p style="font-size: 1.5rem; color: #e67e22;">🔥仲間ボーナス合計: +<span id="bonus-display">0</span>%</p>
+    </div>
+
     <script>
         // --- データの管理 ---
         let score = parseInt(localStorage.getItem('save_score')) || 0;
         let autoClickers = parseInt(localStorage.getItem('save_autos')) || 0;
-        let autoCost = parseInt(localStorage.getItem('save_cost')) || 50;
+        let autoCost = parseInt(localStorage.getItem('save_cost')) || 100;
         let clickPower = parseInt(localStorage.getItem('save_click_power')) || 1;
         let clickPowerCost = parseInt(localStorage.getItem('save_click_power_cost')) || 50;
         let reverse = parseInt(localStorage.getItem('save_reverse')) || 0;
         let reverseCost = parseInt(localStorage.getItem('save_reverse_cost')) || 1000; 
+        let currentCompanion = localStorage.getItem('save_companion') || "まだ誰もいません";
+        let companionMultiplier = parseFloat(localStorage.getItem('save_companion_multiplier')) || 0.0;
+        let gachaCost = parseInt(localStorage.getItem('save_gacha_cost')) || 1000;
 
         // --- 画面上の要素を取得 ---
         const bgmSound = document.getElementById('bgm-sound');
@@ -113,13 +124,17 @@
         const clickPowerCountDisplay = document.getElementById('click-power-count');
         const buyReverseBtn = document.getElementById('buy-reverse-btn');
         const reverseCountDisplay = document.getElementById('reverse-count');
-        const autoPDisplay = document.getElementById('auto-p')
-        const clickPowerPDisplay = document.getElementById('click-power-p')
+        const autoPDisplay = document.getElementById('auto-p');
+        const clickPowerPDisplay = document.getElementById('click-power-p');
+        const gachaShop = document.getElementById('gacha-shop');
+        const gachaBtn = document.getElementById('gacha-btn');
+        const gachaResultDisplay = document.getElementById('gacha-result');
+        const bonusDisplay = document.getElementById('bonus-display'); // ★追加：倍率表示用
 
         // --- 画面表示を更新する関数 ---
         function updateDisplay() {
             scoreDisplay.textContent = score;
-            autoCountDisplay.textContent = autoClickers * (reverse + 1);
+            autoCountDisplay.textContent = Math.floor(autoClickers * (reverse + 1) * (1 + companionMultiplier));
             clickPowerCountDisplay.textContent = clickPower * (reverse + 1);
             reverseCountDisplay.textContent = reverse;
             autoPDisplay.textContent = reverse + 1;
@@ -127,6 +142,7 @@
             buyAutoBtn.textContent = `自動連打機を購入（コスト:${autoCost}）`;
             buyClickPowerBtn.textContent = `クリックパワーを購入（コスト:${clickPowerCost}）`;
             buyReverseBtn.textContent = `★リバース★（コスト:${reverseCost}）`;
+            gachaBtn.textContent = `ガチャを引く（コスト:${gachaCost}）`
 
             // コストが足りない時はボタンを押せなくする
             // 自動
@@ -149,6 +165,22 @@
             } else {
                 buyReverseBtn.disabled = true;
             }
+
+            // ガチャ
+            if (reverse >= 1) {
+                gachaShop.style.display = 'block';
+            } else {
+                gachaShop.style.display = 'none';
+            }
+
+            if (score >= gachaCost) {
+                gachaBtn.disabled = false;
+            } else {
+                gachaBtn.disabled = true;
+            }
+
+            gachaResultDisplay.textContent = currentCompanion;
+            bonusDisplay.textContent = Math.floor(companionMultiplier * 100);
         }
 
         // --- セーブをする関数 ---
@@ -160,6 +192,9 @@
             localStorage.setItem('save_click_power_cost',clickPowerCost);
             localStorage.setItem('save_reverse',reverse);
             localStorage.setItem('save_reverse_cost',reverseCost);
+            localStorage.setItem('save_companion',currentCompanion);
+            localStorage.setItem('save_companion_multiplier',companionMultiplier);
+            localStorage.setItem('save_gacha_cost',gachaCost);
         }
 
         // --- 1. コインをクリックしたときの処理 ---
@@ -204,17 +239,42 @@
                 clickPower = 1;
                 clickPowerCost = 50;
                 autoClickers = 0;
-                autoCost = 50;
+                autoCost = 100;
                 score = 0;
+                gachaCost = 1000 * reverse;
                 updateDisplay();
                 saveGame(); // ★ここで自動セーブ！
             }
-        })
+        });
 
-        // --- 5. 1秒ごとに自動で実行される処理 ---
+        // --- 5. ガチャボタンをクリックしたときの処理 ---
+        gachaBtn.addEventListener('click', () => {
+            if (score >= gachaCost) {
+                score -= gachaCost;
+
+                // ランダムで仲間が加わり、倍率が足し算される
+                const r = Math.random();
+                if (r < 0.5) {
+                    currentCompanion = "お手伝いネコ（全体の生産力 +10%）";
+                    companionMultiplier += 0.1; // +10%
+                } else if (r < 0.85) {
+                    currentCompanion = "応援ロボ（全体の生産力 +30%）";
+                    companionMultiplier += 0.3; // +30%
+                } else {
+                    currentCompanion = "ゴールドロボット（全体の生産力 +100%）";
+                    companionMultiplier += 1.0; // +100%(2倍)
+                }
+
+                updateDisplay();
+                saveGame();
+            }
+        });
+
+        // --- 6. 1秒ごとに自動で実行される処理 ---
         setInterval(() => {
             if (autoClickers > 0) {
-                score += autoClickers * (reverse + 1);  // アイテムの数だけコインが増える
+                let baseAutoPower = autoClickers * (reverse + 1);
+                score += Math.floor(baseAutoPower * (1 + companionMultiplier));  // アイテムの数だけコインが増える
                 updateDisplay();
                 saveGame();
             }
