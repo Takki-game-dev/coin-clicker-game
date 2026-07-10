@@ -94,8 +94,9 @@
 
     <div class="shop" id="gacha-shop" style="background: #e8f8f5; border: 2px solid #a3e4d7; display: none;">
         <h1>仲間ガチャ</h1>
-        <p>1000コインで仲間をゲット!（自動連打が全体パワーアップ）</p>
-        <button id="gacha-btn" class="shop-btn">ガチャを引く（コスト:1000）</button>
+        <p>10000コインで仲間をゲット!（自動連打が全体パワーアップ）</p>
+        <button id="gacha-btn-otamesi" class="shop-btn">お試しで引く（コスト:0）</button><br>
+        <button id="gacha-btn" class="shop-btn">ガチャを引く（コスト:10000）</button>
         <p style="font-size: 1.5rem; color: #666;">最新の仲間:<span id="gacha-result">まだ誰もいません</span></p>
         <p style="font-size: 1.5rem; color: #e67e22;">🔥仲間ボーナス合計: +<span id="bonus-display">0</span>%</p>
     </div>
@@ -111,7 +112,8 @@
         let reverseCost = parseInt(localStorage.getItem('save_reverse_cost')) || 1000; 
         let currentCompanion = localStorage.getItem('save_companion') || "まだ誰もいません";
         let companionMultiplier = parseFloat(localStorage.getItem('save_companion_multiplier')) || 0.0;
-        let gachaCost = parseInt(localStorage.getItem('save_gacha_cost')) || 1000;
+        let gachaCost = parseInt(localStorage.getItem('save_gacha_cost')) || 10000;
+        let otamesi = parseInt(localStorage.getItem('save_otamesi')) || 0;
 
         // --- 画面上の要素を取得 ---
         const bgmSound = document.getElementById('bgm-sound');
@@ -130,6 +132,7 @@
         const gachaBtn = document.getElementById('gacha-btn');
         const gachaResultDisplay = document.getElementById('gacha-result');
         const bonusDisplay = document.getElementById('bonus-display'); // ★追加：倍率表示用
+        const gachaBtnOtamesi = document.getElementById('gacha-btn-otamesi');
 
         // --- 画面表示を更新する関数 ---
         function updateDisplay() {
@@ -179,6 +182,12 @@
                 gachaBtn.disabled = true;
             }
 
+            if (otamesi == 0) {
+                gachaBtnOtamesi.style.display = 'block';
+            } else {
+                gachaBtnOtamesi.style.display = 'none';
+            }
+
             gachaResultDisplay.textContent = currentCompanion;
             bonusDisplay.textContent = Math.floor(companionMultiplier * 100);
         }
@@ -195,6 +204,7 @@
             localStorage.setItem('save_companion',currentCompanion);
             localStorage.setItem('save_companion_multiplier',companionMultiplier);
             localStorage.setItem('save_gacha_cost',gachaCost);
+            localStorage.setItem('save_otamesi',otamesi);
         }
 
         // --- 1. コインをクリックしたときの処理 ---
@@ -241,7 +251,7 @@
                 autoClickers = 0;
                 autoCost = 100;
                 score = 0;
-                gachaCost = 1000 * reverse;
+                gachaCost = 10000 * reverse;
                 updateDisplay();
                 saveGame(); // ★ここで自動セーブ！
             }
@@ -269,6 +279,28 @@
                 saveGame();
             }
         });
+
+        gachaBtnOtamesi.addEventListener('click', () => {
+            if (otamesi == 0) {
+                otamesi = 1;
+
+                // ランダムで仲間が加わり、倍率が足し算される
+                const r = Math.random();
+                if (r < 0.5) {
+                    currentCompanion = "お手伝いネコ（全体の生産力 +10%）";
+                    companionMultiplier += 0.1; // +10%
+                } else if (r < 0.85) {
+                    currentCompanion = "応援ロボ（全体の生産力 +30%）";
+                    companionMultiplier += 0.3; // +30%
+                } else {
+                    currentCompanion = "ゴールドロボット（全体の生産力 +100%）";
+                    companionMultiplier += 1.0; // +100%(2倍)
+                }
+
+                updateDisplay();
+                saveGame();
+            }
+        })
 
         // --- 6. 1秒ごとに自動で実行される処理 ---
         setInterval(() => {
