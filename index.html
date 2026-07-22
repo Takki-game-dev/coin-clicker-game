@@ -257,6 +257,7 @@
                 autoClickers = 0;
                 autoCost = 100;
                 score = 0;
+                companionMultiplier = 0;
                 gachaCost = 10000 * reverse;
                 updateDisplay();
                 saveGame(); // ★ここで自動セーブ！
@@ -271,16 +272,15 @@
                 // ランダムで仲間が加わり、倍率が足し算される
                 const r = Math.random();
                 if (r < 0.5) {
-                    currentCompanion = "お手伝いネコ（全体の生産力 +10%）";
-                    companionMultiplier += 0.1; // +10%
+                    currentCompanion = `お手伝いネコ（全体の生産力 +${10 * reverse}%）`;
+                    companionMultiplier += 0.1 * reverse; // +10% × リバース
                 } else if (r < 0.85) {
-                    currentCompanion = "応援ロボ（全体の生産力 +30%）";
-                    companionMultiplier += 0.3; // +30%
+                    currentCompanion = `応援ロボ（全体の生産力 +${30 * reverse}%）`;
+                    companionMultiplier += 0.3 * reverse; // +30% × リバース
                 } else {
-                    currentCompanion = "ゴールドロボット（全体の生産力 +100%）";
-                    companionMultiplier += 1.0; // +100%(2倍)
+                    currentCompanion = `ゴールドロボット（全体の生産力 +${100 * reverse}%）`;
+                    companionMultiplier += 1.0 * reverse; // +100%(2倍) × リバース
                 }
-
                 updateDisplay();
                 saveGame();
             }
@@ -293,14 +293,14 @@
                 // ランダムで仲間が加わり、倍率が足し算される
                 const r = Math.random();
                 if (r < 0.5) {
-                    currentCompanion = "お手伝いネコ（全体の生産力 +10%）";
-                    companionMultiplier += 0.1; // +10%
+                    currentCompanion = `お手伝いネコ（全体の生産力 +${10 * reverse}%）`;
+                    companionMultiplier += 0.1 * reverse; // +10% × リバース
                 } else if (r < 0.85) {
-                    currentCompanion = "応援ロボ（全体の生産力 +30%）";
-                    companionMultiplier += 0.3; // +30%
+                    currentCompanion = `応援ロボ（全体の生産力 +${30 * reverse}%）`;
+                    companionMultiplier += 0.3 * reverse; // +30% × リバース
                 } else {
-                    currentCompanion = "ゴールドロボット（全体の生産力 +100%）";
-                    companionMultiplier += 1.0; // +100%(2倍)
+                    currentCompanion = `ゴールドロボット（全体の生産力 +${100 * reverse}%）`;
+                    companionMultiplier += 1.0 * reverse; // +100%(2倍) × リバース
                 }
 
                 updateDisplay();
