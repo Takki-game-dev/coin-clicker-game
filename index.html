@@ -114,7 +114,7 @@
     </div>
 
     <!-- Xへ成果をシェア -->
-    <a id="tweet-link" href="#" target="_blank" style="display: inline-block; background-color: #1DA1F2; color: white; font-size: 1.2rem; font-weight: bold; padding: 10px 20px; border: none; border-radius: 25px; margin-top: 15px; text-decoration: none; cursor: pointer;">
+    <a id="tweet-new-link" href="#" target="_blank" style="display: inline-block; background-color: #1DA1F2; color: white; font-size: 1.2rem; font-weight: bold; padding: 10px 20px; border: none; border-radius: 25px; margin-top: 15px; text-decoration: none; cursor: pointer;">
         Xにハイスコアをツイートする
     </a>
 
@@ -176,13 +176,13 @@
 
         // --- Xへツイートする処理 ---
         function updateTweetLink() {
-            const tweetLink = document.getElementById('tweet-link');
+            const tweetLink = document.getElementById('tweet-new-link');
             if (!tweetLink) return;
 
             const text = `Takkiのコインクリッカーゲームで、なんと${score}コイン達成！リバース回数は${reverse}回だよ！ https://takki-game-dev.github.io/coin-clicker-game/`
             const hashtags = "coin_clicker,プログラミング";
 
-            const twitterUrl = `https://twitter.com{encodeURIComponent(text)}&hashtags=${encodeURIComponent(hashtags)}`;
+            const twitterUrl = `https://x.com${encodeURIComponent(text)}&hashtags=${encodeURIComponent(hashtags)}`;
 
             tweetLink.href = twitterUrl;
         }
