@@ -114,9 +114,7 @@
     </div>
 
     <!-- Xへ成果をシェア -->
-    <a id="tweet-new-link" href="#" target="_blank" style="display: inline-block; background-color: #1DA1F2; color: white; font-size: 1.2rem; font-weight: bold; padding: 10px 20px; border: none; border-radius: 25px; margin-top: 15px; text-decoration: none; cursor: pointer;">
-        Xにハイスコアをツイートする
-    </a>
+    <a href="https://x.com" class="twitter-share-button" data-text="Takkiのコインクリッカーゲームをプレイ中！" data-size="large" style="display: inline-block; background-color: #1DA1F2; color: white; font-size: 1.2rem; font-weight: bold; padding: 10px 20px; border: none; border-radius: 25px; margin-top: 15px; text-decoration: none; cursor: pointer;">Xにハイスコアをツイートする</a><script async src="https://twitter.com" charset="UTF-8"></script>
 
     <div style="background: #e8f8f5; border: 2px solid #a3e4d7; margin-top: 20px;">
         <h1>🎮　Takki のゲーム開発　🎮</h1>
@@ -173,19 +171,6 @@
 
         // プレイヤーがゲットしたキャラクターを記録する
         let unlockedCharacters = JSON.parse(localStorage.getItem('save_unlocked_chars')) || [];
-
-        // --- Xへツイートする処理 ---
-        function updateTweetLink() {
-            const tweetLink = document.getElementById('tweet-new-link');
-            if (!tweetLink) return;
-
-            const text = `Takkiのコインクリッカーゲームで、なんと${score}コイン達成！リバース回数は${reverse}回だよ！ https://takki-game-dev.github.io/coin-clicker-game/`
-            const hashtags = "coin_clicker,プログラミング";
-
-            const twitterUrl = `https://x.com${encodeURIComponent(text)}&hashtags=${encodeURIComponent(hashtags)}`;
-
-            tweetLink.href = twitterUrl;
-        }
 
         // --- 画面表示を更新する関数 ---
         function updateDisplay() {
@@ -291,8 +276,6 @@
             unlockedCountDisplay.textContent = unlockedCharacters.length;
             const rate = (unlockedCharacters.length / characterRegistry.length) * 100;
             completionRateDisplay.textContent = Math.floor(rate);
-
-            updateTweetLink();
         }
 
         // --- セーブをする関数 ---
